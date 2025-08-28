@@ -2,9 +2,20 @@
 FROM python:3.13-slim
 
 RUN apt-get update \
-	&& apt-get install -y curl jq \
-	&& apt-get clean \
-	&& rm -rf /var/lib/apt/lists/*
+  && apt-get install -y  \
+       ca-certificates curl gnupg jq \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+      | gpg --dearmor -o /usr/share/keyrings/ms.gpg \
+  && echo "deb [signed-by=/usr/share/keyrings/ms.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" \
+      > /etc/apt/sources.list.d/mssql-release.list \
+  && apt-get update \
+  && ACCEPT_EULA=Y apt-get install -y \
+    libgssapi-krb5-2 msodbcsql18 unixodbc unixodbc-dev \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV DEPLOYMENT_TARGET=Docker
 ENV TZ=UTC
